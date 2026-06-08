@@ -12,7 +12,7 @@ import { trackEvent } from '../../analytics.js';
 
 export function Leaderboard() {
   const navigate = useNavigate();
-  const { questionId: sessionQuestionId, pool } = useSessionStore();
+  const { question: sessionQuestion, pool } = useSessionStore();
 
   // Pokemon data map: id -> pokemon object (name + sprites)
   const [pokemonMap, setPokemonMap] = useState(
@@ -33,11 +33,12 @@ export function Leaderboard() {
       } catch {
         // offline — dbQuestionMap stays empty, will use fallback ids
       }
-      const sessionFallback = FALLBACK_QUESTIONS.find((q) => q.id === sessionQuestionId);
+      // Match by slug so DB-UUID question IDs don't break the default selection
+      const sessionFallback = FALLBACK_QUESTIONS.find((q) => q.slug === sessionQuestion?.slug);
       setActiveLbQuestion(sessionFallback ?? FALLBACK_QUESTIONS[0]);
     }
     loadQuestions();
-  }, [sessionQuestionId]);
+  }, [sessionQuestion?.slug]);
 
   // Use DB question UUID for ELO queries if available, otherwise fallback id
   const lbQuestionId = activeLbQuestion

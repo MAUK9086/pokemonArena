@@ -11,6 +11,8 @@ export function useLeaderboard(questionId) {
   useEffect(() => {
     if (!questionId) return;
 
+    actions.clearData();
+
     async function fetchAll() {
       actions.setLoading(true);
       const [topElo, controversial] = await Promise.all([

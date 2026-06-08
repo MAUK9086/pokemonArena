@@ -16,19 +16,24 @@ export function useSession() {
       initialized.current = true;
       let question = null;
 
-      // User picked a specific question from the results screen
-      if (overrideQuestion) {
-        question = overrideQuestion;
-        actions.clearOverrideQuestion();
-      } else {
-        try {
-          const dbQuestions = await fetchActiveQuestions();
-          if (dbQuestions.length) question = getDailyQuestion(dbQuestions);
-        } catch {
-          // Supabase unavailable — fall through to fallback
+      try {
+        const dbQuestions = await fetchActiveQuestions();
+
+        if (overrideQuestion) {
+          // Resolve override to DB question by slug so we get a real UUID for ELO storage
+          const dbMatch = dbQuestions.find((q) => q.slug === overrideQuestion.slug);
+          question = dbMatch ?? overrideQuestion;
+        } else if (dbQuestions.length) {
+          question = getDailyQuestion(dbQuestions);
         }
-        if (!question) question = getDailyQuestion(FALLBACK_QUESTIONS);
+      } catch {
+        if (overrideQuestion) {
+          question = overrideQuestion;
+        }
       }
+
+      if (overrideQuestion) actions.clearOverrideQuestion();
+      if (!question) question = getDailyQuestion(FALLBACK_QUESTIONS);
 
       actions.initSession(question, pool);
     }

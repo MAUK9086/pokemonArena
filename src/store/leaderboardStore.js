@@ -14,5 +14,6 @@ export const useLeaderboardStore = create((set) => ({
     setLoading: (loading) => set({ loading }),
     setData: ({ topElo, controversial, onStreak, questionId }) =>
       set({ topElo, controversial, onStreak, questionId, loading: false, lastUpdated: Date.now() }),
+    clearData: () => set({ topElo: [], controversial: [], onStreak: [], loading: true }),
   },
 }));

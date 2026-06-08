@@ -385,6 +385,7 @@ body.arena-active {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  overflow: clip;
 }
 
 .result-card__header {
