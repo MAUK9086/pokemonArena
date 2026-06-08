@@ -10,40 +10,57 @@ import { LeaderboardRow } from './LeaderboardRow.jsx';
 import { ControversialPair } from './ControversialPair.jsx';
 import { trackEvent } from '../../analytics.js';
 
+const FALLBACK_SLUGS = new Set(FALLBACK_QUESTIONS.map((q) => q.slug));
+
+function getLabel(q) {
+  if (q.shortLabel) return q.shortLabel;
+  const fallback = FALLBACK_QUESTIONS.find((f) => f.slug === q.slug);
+  return fallback?.shortLabel ?? q.slug.replace(/-/g, ' ').toUpperCase();
+}
+
 export function Leaderboard() {
   const navigate = useNavigate();
   const { question: sessionQuestion, pool } = useSessionStore();
 
-  // Pokemon data map: id -> pokemon object (name + sprites)
   const [pokemonMap, setPokemonMap] = useState(
     () => Object.fromEntries(pool.map((p) => [p.id, p]))
   );
 
-  // DB question map: slug -> db question, for resolving real UUIDs
-  const [dbQuestionMap, setDbQuestionMap] = useState({});
-  const [activeLbQuestion, setActiveLbQuestion] = useState(null);
+  // The canonical list of questions to show as pills
+  // Starts as FALLBACK_QUESTIONS; replaced with DB questions (same slugs) once loaded
+  const [questions, setQuestions] = useState(FALLBACK_QUESTIONS);
+  const [activeQuestion, setActiveQuestion] = useState(null);
 
   useEffect(() => {
-    async function loadQuestions() {
+    let cancelled = false;
+    async function load() {
+      let list = FALLBACK_QUESTIONS;
       try {
-        const dbQuestions = await fetchActiveQuestions();
-        const map = {};
-        dbQuestions.forEach((q) => { map[q.slug] = q; });
-        setDbQuestionMap(map);
+        const db = await fetchActiveQuestions();
+        // Keep only the 5 canonical questions by slug
+        const canonical = db.filter((q) => FALLBACK_SLUGS.has(q.slug));
+        if (canonical.length > 0) list = canonical;
       } catch {
-        // offline — dbQuestionMap stays empty, will use fallback ids
+        // DB unavailable — keep FALLBACK_QUESTIONS
       }
-      // Match by slug so DB-UUID question IDs don't break the default selection
-      const sessionFallback = FALLBACK_QUESTIONS.find((q) => q.slug === sessionQuestion?.slug);
-      setActiveLbQuestion(sessionFallback ?? FALLBACK_QUESTIONS[0]);
-    }
-    loadQuestions();
-  }, [sessionQuestion?.slug]);
+      if (cancelled) return;
 
-  // Use DB question UUID for ELO queries if available, otherwise fallback id
-  const lbQuestionId = activeLbQuestion
-    ? (dbQuestionMap[activeLbQuestion.slug]?.id ?? activeLbQuestion.id)
-    : null;
+      setQuestions(list);
+      // Set default only once (don't clobber user's pill selection)
+      setActiveQuestion((prev) => {
+        if (prev !== null) return prev;
+        const slug = sessionQuestion?.slug;
+        return list.find((q) => q.slug === slug) ?? list[0];
+      });
+    }
+    load();
+    return () => { cancelled = true; };
+  }, []); // intentionally runs once on mount
+
+  // activeQuestion.id is:
+  //   DB UUID when list came from Supabase  → queries correctly
+  //   'fallback-*' when offline             → returns empty (expected)
+  const lbQuestionId = activeQuestion?.id ?? null;
 
   const { tab, topElo, controversial, loading, actions } = useLeaderboard(lbQuestionId);
 
@@ -63,13 +80,13 @@ export function Leaderboard() {
   }, [topElo, controversial]);
 
   function handleQuestionSwitch(q) {
-    setActiveLbQuestion(q);
+    setActiveQuestion(q);
     trackEvent('leaderboard_view', { question_slug: q.slug, tab });
   }
 
   function handleTabChange(newTab) {
     actions.setTab(newTab);
-    trackEvent('leaderboard_view', { tab: newTab, question_slug: activeLbQuestion?.slug });
+    trackEvent('leaderboard_view', { tab: newTab, question_slug: activeQuestion?.slug });
   }
 
   return (
@@ -81,22 +98,21 @@ export function Leaderboard() {
         <h1 className="leaderboard__title">Leaderboard</h1>
       </div>
 
-      {/* Question pill switcher — always all 5 from FALLBACK_QUESTIONS */}
       <div className="lb-question-pills">
-        {FALLBACK_QUESTIONS.map((q) => (
+        {questions.map((q) => (
           <button
-            key={q.slug}
-            className={`lb-question-pill${activeLbQuestion?.slug === q.slug ? ' lb-question-pill--active' : ''}`}
+            key={q.id ?? q.slug}
+            className={`lb-question-pill${activeQuestion?.slug === q.slug ? ' lb-question-pill--active' : ''}`}
             onClick={() => handleQuestionSwitch(q)}
           >
-            {q.shortLabel}
+            {getLabel(q)}
           </button>
         ))}
       </div>
 
-      {activeLbQuestion && (
+      {activeQuestion && (
         <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>
-          {activeLbQuestion.prompt}
+          {activeQuestion.prompt}
         </p>
       )}
 
