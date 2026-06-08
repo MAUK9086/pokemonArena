@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSessionStore } from '../../store/sessionStore.js';
 import { useLeaderboard } from '../../hooks/useLeaderboard.js';
 import { fetchActiveQuestions } from '../../services/rankingService.js';
+import { fetchPokemonBatch } from '../../services/pokemonApi.js';
 import { FALLBACK_QUESTIONS } from '../../config/questions.js';
 import { TabBar } from './TabBar.jsx';
 import { LeaderboardRow } from './LeaderboardRow.jsx';
@@ -12,34 +13,53 @@ import { trackEvent } from '../../analytics.js';
 export function Leaderboard() {
   const navigate = useNavigate();
   const { questionId: sessionQuestionId, pool } = useSessionStore();
-  const pokemonNameMap = Object.fromEntries(pool.map((p) => [p.id, p.name]));
 
-  // All available questions for the pill switcher
-  const [allQuestions, setAllQuestions] = useState(FALLBACK_QUESTIONS);
-  // Active leaderboard question — default to current session's question
+  // Pokemon data map: id -> pokemon object (name + sprites)
+  const [pokemonMap, setPokemonMap] = useState(
+    () => Object.fromEntries(pool.map((p) => [p.id, p]))
+  );
+
+  // DB question map: slug -> db question, for resolving real UUIDs
+  const [dbQuestionMap, setDbQuestionMap] = useState({});
   const [activeLbQuestion, setActiveLbQuestion] = useState(null);
-
-  const fallbackSlugs = new Set(FALLBACK_QUESTIONS.map((q) => q.slug));
 
   useEffect(() => {
     async function loadQuestions() {
       try {
         const dbQuestions = await fetchActiveQuestions();
-        // Only keep questions whose slug exists in FALLBACK_QUESTIONS
-        const filtered = dbQuestions.filter((q) => fallbackSlugs.has(q.slug));
-        const questions = filtered.length ? filtered : FALLBACK_QUESTIONS;
-        setAllQuestions(questions);
-        const match = questions.find((q) => q.id === sessionQuestionId || q.slug === FALLBACK_QUESTIONS.find((f) => f.id === sessionQuestionId)?.slug);
-        setActiveLbQuestion(match ?? questions[0]);
+        const map = {};
+        dbQuestions.forEach((q) => { map[q.slug] = q; });
+        setDbQuestionMap(map);
       } catch {
-        const fallbackMatch = FALLBACK_QUESTIONS.find((q) => q.id === sessionQuestionId);
-        setActiveLbQuestion(fallbackMatch ?? FALLBACK_QUESTIONS[0]);
+        // offline — dbQuestionMap stays empty, will use fallback ids
       }
+      const sessionFallback = FALLBACK_QUESTIONS.find((q) => q.id === sessionQuestionId);
+      setActiveLbQuestion(sessionFallback ?? FALLBACK_QUESTIONS[0]);
     }
     loadQuestions();
   }, [sessionQuestionId]);
 
-  const { tab, topElo, controversial, loading, actions } = useLeaderboard(activeLbQuestion?.id);
+  // Use DB question UUID for ELO queries if available, otherwise fallback id
+  const lbQuestionId = activeLbQuestion
+    ? (dbQuestionMap[activeLbQuestion.slug]?.id ?? activeLbQuestion.id)
+    : null;
+
+  const { tab, topElo, controversial, loading, actions } = useLeaderboard(lbQuestionId);
+
+  // Fetch names/sprites for any pokemon IDs not yet in the map
+  useEffect(() => {
+    const knownIds = new Set(Object.keys(pokemonMap).map(Number));
+    const allIds = [...topElo, ...controversial].map((r) => r.pokemon_id);
+    const missing = [...new Set(allIds)].filter((id) => !knownIds.has(id));
+    if (missing.length === 0) return;
+    fetchPokemonBatch(missing).then((fetched) => {
+      setPokemonMap((prev) => {
+        const next = { ...prev };
+        fetched.forEach((p) => { next[p.id] = p; });
+        return next;
+      });
+    });
+  }, [topElo, controversial]);
 
   function handleQuestionSwitch(q) {
     setActiveLbQuestion(q);
@@ -51,14 +71,6 @@ export function Leaderboard() {
     trackEvent('leaderboard_view', { tab: newTab, question_slug: activeLbQuestion?.slug });
   }
 
-  function getLabel(q) {
-    if (q.shortLabel) return q.shortLabel;
-    const fallback = FALLBACK_QUESTIONS.find((f) => f.slug === q.slug);
-    if (fallback?.shortLabel) return fallback.shortLabel;
-    const words = q.prompt.split(' ');
-    return words.slice(0, 3).join(' ').toUpperCase() + (words.length > 3 ? '...' : '');
-  }
-
   return (
     <div className="leaderboard-page">
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -68,20 +80,19 @@ export function Leaderboard() {
         <h1 className="leaderboard__title">Leaderboard</h1>
       </div>
 
-      {/* Question pill switcher */}
+      {/* Question pill switcher — always all 5 from FALLBACK_QUESTIONS */}
       <div className="lb-question-pills">
-        {allQuestions.map((q) => (
+        {FALLBACK_QUESTIONS.map((q) => (
           <button
-            key={q.id ?? q.slug}
+            key={q.slug}
             className={`lb-question-pill${activeLbQuestion?.slug === q.slug ? ' lb-question-pill--active' : ''}`}
             onClick={() => handleQuestionSwitch(q)}
           >
-            {getLabel(q)}
+            {q.shortLabel}
           </button>
         ))}
       </div>
 
-      {/* Active question prompt */}
       {activeLbQuestion && (
         <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>
           {activeLbQuestion.prompt}
@@ -106,7 +117,7 @@ export function Leaderboard() {
                 key={row.pokemon_id}
                 rank={i + 1}
                 data={row}
-                pokemonName={pokemonNameMap[row.pokemon_id]}
+                pokemon={pokemonMap[row.pokemon_id]}
                 index={i}
               />
             ))
@@ -125,7 +136,7 @@ export function Leaderboard() {
               <ControversialPair
                 key={row.pokemon_id}
                 data={row}
-                pokemonName={pokemonNameMap[row.pokemon_id]}
+                pokemon={pokemonMap[row.pokemon_id]}
                 index={i}
               />
             ))
