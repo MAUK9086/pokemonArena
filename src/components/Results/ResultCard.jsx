@@ -126,17 +126,26 @@ export function ResultCard() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
       >
-        <p className="question-picker__heading">Play another question</p>
-        {FALLBACK_QUESTIONS.map((q) => (
-          <button
-            key={q.slug}
-            className={`question-picker__btn${question?.slug === q.slug ? ' question-picker__btn--active' : ''}`}
-            onClick={() => handlePickQuestion(q)}
-          >
-            <span className="question-picker__icon">{q.shortLabel.split(' ')[0]}</span>
-            <span className="question-picker__text">{q.prompt}</span>
-          </button>
-        ))}
+        <p className="question-picker__heading">play another question</p>
+        {FALLBACK_QUESTIONS.map((q) => {
+          const isActive = question?.slug === q.slug;
+          return (
+            <button
+              key={q.slug}
+              className={`question-picker__btn${isActive ? ' question-picker__btn--active' : ''}`}
+              style={{ borderLeftColor: q.categoryColor ?? 'var(--color-border)' }}
+              onClick={() => handlePickQuestion(q)}
+            >
+              <span
+                className="question-picker__tag"
+                style={{ color: q.categoryColor ?? 'var(--color-text-muted)' }}
+              >
+                {q.shortLabel}
+              </span>
+              <span className="question-picker__text">{q.prompt}</span>
+            </button>
+          );
+        })}
       </motion.div>
 
       <button

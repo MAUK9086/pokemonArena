@@ -52,11 +52,10 @@ export function Leaderboard() {
     trackEvent('leaderboard_view', { tab: newTab, question_slug: activeLbQuestion?.slug });
   }
 
-  // Short label: use shortLabel if present (fallback questions), otherwise truncate prompt
   function getLabel(q) {
     if (q.shortLabel) return q.shortLabel;
     const words = q.prompt.split(' ');
-    return words.slice(0, 3).join(' ') + (words.length > 3 ? '…' : '');
+    return words.slice(0, 3).join(' ').toUpperCase() + (words.length > 3 ? '...' : '');
   }
 
   return (

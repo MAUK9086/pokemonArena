@@ -1,9 +1,8 @@
 import { useState } from 'react';
 
-export function PokemonSprite({ pokemon, side, size = 180, forExport = false }) {
+export function PokemonSprite({ pokemon, side, size, forExport = false }) {
   const [useFallback, setUseFallback] = useState(false);
 
-  // For html2canvas export use static (GIFs don't export cleanly)
   const src =
     forExport || useFallback || !pokemon.spriteAnimated
       ? pokemon.spriteStatic
@@ -17,6 +16,9 @@ export function PokemonSprite({ pokemon, side, size = 180, forExport = false }) 
       src={src}
       alt={pokemon.name}
       style={{
+        // Explicit size (e.g. podium): use it, capped at 100% of container
+        // No size: CSS class handles responsive sizing
+        ...(size ? { width: `${size}px`, maxWidth: '100%' } : {}),
         imageRendering: 'pixelated',
         transform: mirrored ? 'scaleX(-1)' : 'none',
         userSelect: 'none',
