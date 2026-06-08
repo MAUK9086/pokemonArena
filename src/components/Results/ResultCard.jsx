@@ -15,6 +15,7 @@ import { trackEvent } from '../../analytics.js';
 
 export function ResultCard() {
   const cardRef = useRef(null);
+  const exportRef = useRef(null);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const urlSessionId = searchParams.get('session');
@@ -49,9 +50,9 @@ export function ResultCard() {
   }, []);
 
   async function handleExport() {
-    if (!cardRef.current) return;
+    if (!exportRef.current) return;
     try {
-      const canvas = await html2canvas(cardRef.current, {
+      const canvas = await html2canvas(exportRef.current, {
         backgroundColor: '#13131a',
         scale: 2,
         useCORS: true,
@@ -95,23 +96,25 @@ export function ResultCard() {
         initial="hidden"
         animate="visible"
       >
-        <motion.div className="result-card__header" variants={resultCardItemVariants}>
-          <h1 className="result-card__title">Your Results</h1>
-          {question && <p className="result-card__question">{question.prompt}</p>}
-        </motion.div>
-
-        {topPicks[0] && (
-          <motion.div className="result-card__champion" variants={resultCardItemVariants}>
-            <span className="result-card__champion-label">Your Champion</span>
-            <span className="result-card__champion-name">{topPicks[0].pokemon.name}</span>
+        <div ref={exportRef}>
+          <motion.div className="result-card__header" variants={resultCardItemVariants}>
+            <h1 className="result-card__title">Your Results</h1>
+            {question && <p className="result-card__question">{question.prompt}</p>}
           </motion.div>
-        )}
 
-        <TopThreePodium topPicks={topPicks} />
+          {topPicks[0] && (
+            <motion.div className="result-card__champion" variants={resultCardItemVariants}>
+              <span className="result-card__champion-label">Your Champion</span>
+              <span className="result-card__champion-name">{topPicks[0].pokemon.name}</span>
+            </motion.div>
+          )}
 
-        {archetype && <ArchetypeBadge archetype={archetype} />}
+          <TopThreePodium topPicks={topPicks} />
 
-        <ImpactLine eloImpacts={eloImpacts} pokemonMap={pokemonMap} />
+          {archetype && <ArchetypeBadge archetype={archetype} />}
+
+          <ImpactLine eloImpacts={eloImpacts} pokemonMap={pokemonMap} />
+        </div>
 
         <motion.div variants={resultCardItemVariants}>
           <ShareButton onExport={handleExport} sessionId={displaySessionId} />

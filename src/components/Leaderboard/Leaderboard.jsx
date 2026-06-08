@@ -19,19 +19,18 @@ export function Leaderboard() {
   // Active leaderboard question — default to current session's question
   const [activeLbQuestion, setActiveLbQuestion] = useState(null);
 
+  const fallbackSlugs = new Set(FALLBACK_QUESTIONS.map((q) => q.slug));
+
   useEffect(() => {
     async function loadQuestions() {
       try {
         const dbQuestions = await fetchActiveQuestions();
-        if (dbQuestions.length) {
-          setAllQuestions(dbQuestions);
-          // Default to session question if it's in the list, otherwise first
-          const match = dbQuestions.find((q) => q.id === sessionQuestionId);
-          setActiveLbQuestion(match ?? dbQuestions[0]);
-        } else {
-          const fallbackMatch = FALLBACK_QUESTIONS.find((q) => q.id === sessionQuestionId);
-          setActiveLbQuestion(fallbackMatch ?? FALLBACK_QUESTIONS[0]);
-        }
+        // Only keep questions whose slug exists in FALLBACK_QUESTIONS
+        const filtered = dbQuestions.filter((q) => fallbackSlugs.has(q.slug));
+        const questions = filtered.length ? filtered : FALLBACK_QUESTIONS;
+        setAllQuestions(questions);
+        const match = questions.find((q) => q.id === sessionQuestionId || q.slug === FALLBACK_QUESTIONS.find((f) => f.id === sessionQuestionId)?.slug);
+        setActiveLbQuestion(match ?? questions[0]);
       } catch {
         const fallbackMatch = FALLBACK_QUESTIONS.find((q) => q.id === sessionQuestionId);
         setActiveLbQuestion(fallbackMatch ?? FALLBACK_QUESTIONS[0]);
@@ -54,6 +53,8 @@ export function Leaderboard() {
 
   function getLabel(q) {
     if (q.shortLabel) return q.shortLabel;
+    const fallback = FALLBACK_QUESTIONS.find((f) => f.slug === q.slug);
+    if (fallback?.shortLabel) return fallback.shortLabel;
     const words = q.prompt.split(' ');
     return words.slice(0, 3).join(' ').toUpperCase() + (words.length > 3 ? '...' : '');
   }

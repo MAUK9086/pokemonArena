@@ -254,8 +254,10 @@ body.arena-active {
   min-height: 280px;
   transition: background var(--transition-fast);
 }
-.pokemon-slot:hover { background: rgba(255,255,255,0.03); }
-.pokemon-slot:active { background: rgba(255,255,255,0.06); }
+@media (hover: hover) {
+  .pokemon-slot:hover { background: rgba(255,255,255,0.03); }
+}
+.pokemon-slot:focus-visible { outline: 2px solid var(--color-neon); outline-offset: 4px; }
 
 .pokemon-slot__inner {
   display: flex;

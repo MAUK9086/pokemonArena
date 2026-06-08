@@ -8,7 +8,6 @@ export function PokemonSlot({ pokemon, side, onClick }) {
     <motion.button
       className={`pokemon-slot pokemon-slot--${side}`}
       onClick={onClick}
-      whileTap={{ scale: 0.96 }}
       aria-label={`Pick ${pokemon.name}`}
     >
       <AnimatePresence mode="wait">
