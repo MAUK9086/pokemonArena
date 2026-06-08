@@ -34,28 +34,31 @@ export function Leaderboard() {
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      let list = FALLBACK_QUESTIONS;
+      // Always show all 5 FALLBACK_QUESTIONS as pills.
+      // For each, swap in the DB question's UUID if a slug match exists so ELO queries work.
+      // Questions without a DB match keep their fallback id — leaderboard shows "no data".
+      const enriched = FALLBACK_QUESTIONS.map((fq) => ({ ...fq }));
       try {
         const db = await fetchActiveQuestions();
-        // Keep only the 5 canonical questions by slug
-        const canonical = db.filter((q) => FALLBACK_SLUGS.has(q.slug));
-        if (canonical.length > 0) list = canonical;
+        db.forEach((dbQ) => {
+          const idx = enriched.findIndex((fq) => fq.slug === dbQ.slug);
+          if (idx !== -1) enriched[idx] = { ...enriched[idx], id: dbQ.id };
+        });
       } catch {
-        // DB unavailable — keep FALLBACK_QUESTIONS
+        // DB unavailable — use fallback ids (ELO queries return empty, which is fine)
       }
       if (cancelled) return;
 
-      setQuestions(list);
-      // Set default only once (don't clobber user's pill selection)
+      setQuestions(enriched);
       setActiveQuestion((prev) => {
         if (prev !== null) return prev;
         const slug = sessionQuestion?.slug;
-        return list.find((q) => q.slug === slug) ?? list[0];
+        return enriched.find((q) => q.slug === slug) ?? enriched[0];
       });
     }
     load();
     return () => { cancelled = true; };
-  }, []); // intentionally runs once on mount
+  }, []); // runs once on mount
 
   // activeQuestion.id is:
   //   DB UUID when list came from Supabase  → queries correctly

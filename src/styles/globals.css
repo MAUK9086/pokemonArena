@@ -482,7 +482,7 @@ body.arena-active {
   align-items: center;
   justify-content: flex-end;
   padding-bottom: 4px;
-  border-radius: 6px;
+  border-radius: 0;
   font-family: var(--font-display);
   font-size: 0.9rem;
   color: rgba(0,0,0,0.7);
