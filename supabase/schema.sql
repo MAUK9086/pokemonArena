@@ -125,16 +125,11 @@ CREATE TRIGGER on_question_created
 -- ===== SEED: INITIAL QUESTIONS =====
 
 INSERT INTO questions (slug, prompt, category, sort_order) VALUES
-  ('zombie-apocalypse', 'Zombie apocalypse — who is your survival partner?',                           'survival',  1),
-  ('snitch',            'Which one would 100% snitch on you to the police?',                           'comedy',    2),
-  ('job-interview',     'You can only bring one as emotional support to a job interview.',              'comedy',    3),
-  ('bar-fight',         'Bar fight breaks out. Who do you want watching your back?',                   'battle',    4),
-  ('elevator',          'Stuck in an elevator for 6 hours. Who makes it survivable?',                  'survival',  5),
-  ('instagram-viral',   'Which one goes viral on Instagram within a week?',                            'aesthetic', 6),
-  ('apartment',         'Share a 1BHK apartment for a year. Who causes the least property damage?',   'comedy',    7),
-  ('haircut',           'You trust one of them to cut your hair. Who do you pick?',                    'comedy',    8),
-  ('music-taste',       'Which one has better music taste?',                                           'aesthetic', 9),
-  ('school-bully',      'If they were both human, which one was definitely the school bully?',         'comedy',   10);
+  ('snitch',        'Which one would 100% snitch on you to the police?',                      'comedy',   1),
+  ('zombie',        'Zombie apocalypse. You can only bring one. Who survives with you?',      'survival', 2),
+  ('job-interview', 'Emotional support for a job interview. Who do you bring?',               'comedy',   3),
+  ('school-bully',  'If they were both human, which one was definitely the school bully?',    'comedy',   4),
+  ('bar-fight',     'Bar fight just broke out. Who is watching your back?',                   'battle',   5);
 
 -- ===== OPTIONAL: CLEANUP OLD SESSION RESULTS =====
 -- Run this periodically (e.g. via a cron job or Supabase Edge Function) to prune old data.

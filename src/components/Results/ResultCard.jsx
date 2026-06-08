@@ -1,10 +1,11 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import html2canvas from 'html2canvas';
 import { useSessionStore } from '../../store/sessionStore.js';
 import { saveSessionResult } from '../../services/rankingService.js';
 import { deriveArchetype } from '../../utils/archetypeEngine.js';
+import { FALLBACK_QUESTIONS } from '../../config/questions.js';
 import { ArchetypeBadge } from './ArchetypeBadge.jsx';
 import { TopThreePodium } from './TopThreePodium.jsx';
 import { ImpactLine } from './ImpactLine.jsx';
@@ -20,7 +21,6 @@ export function ResultCard() {
 
   const { sessionId, question, pool, picks, eloImpacts, matchups, actions } = useSessionStore();
 
-  // Derive top 3 from picks
   const topPicks = Object.entries(picks)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 3)
@@ -38,7 +38,6 @@ export function ResultCard() {
 
   useEffect(() => {
     if (!sessionId || matchups.length === 0) return;
-
     saveSessionResult({
       sessionId,
       questionId: question?.id,
@@ -46,7 +45,6 @@ export function ResultCard() {
       archetype: archetype?.id,
       eloImpacts,
     }).catch(console.warn);
-
     trackEvent('session_complete', { archetype: archetype?.id });
   }, []);
 
@@ -69,13 +67,20 @@ export function ResultCard() {
     }
   }
 
+  function handlePickQuestion(q) {
+    actions.setOverrideQuestion(q);
+    actions.resetSession();
+    navigate('/');
+  }
+
   const displaySessionId = urlSessionId || sessionId;
 
   if (matchups.length === 0 && !urlSessionId) {
     return (
       <div className="result-page">
         <p style={{ color: 'var(--color-text-secondary)', marginTop: '40px' }}>
-          No session found. <button className="btn btn--ghost" onClick={() => navigate('/')}>Play now</button>
+          No session found.{' '}
+          <button className="btn btn--ghost" onClick={() => navigate('/')}>Play now</button>
         </p>
       </div>
     );
@@ -92,9 +97,7 @@ export function ResultCard() {
       >
         <motion.div className="result-card__header" variants={resultCardItemVariants}>
           <h1 className="result-card__title">Your Results</h1>
-          {question && (
-            <p className="result-card__question">{question.prompt}</p>
-          )}
+          {question && <p className="result-card__question">{question.prompt}</p>}
         </motion.div>
 
         {topPicks[0] && (
@@ -115,18 +118,31 @@ export function ResultCard() {
         </motion.div>
       </motion.div>
 
-      <button
-        className="btn btn--ghost"
-        onClick={() => { actions.resetSession(); navigate('/'); }}
-        style={{ marginTop: '8px' }}
+      {/* Question picker — play a different question */}
+      <motion.div
+        className="question-picker"
+        style={{ maxWidth: 'var(--arena-max-width)', width: '100%', marginTop: '24px' }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
       >
-        Play Again
-      </button>
+        <p className="question-picker__heading">Play another question</p>
+        {FALLBACK_QUESTIONS.map((q) => (
+          <button
+            key={q.slug}
+            className={`question-picker__btn${question?.slug === q.slug ? ' question-picker__btn--active' : ''}`}
+            onClick={() => handlePickQuestion(q)}
+          >
+            <span className="question-picker__icon">{q.shortLabel.split(' ')[0]}</span>
+            <span className="question-picker__text">{q.prompt}</span>
+          </button>
+        ))}
+      </motion.div>
 
       <button
         className="btn btn--ghost"
         onClick={() => navigate('/leaderboard')}
-        style={{ marginTop: '4px' }}
+        style={{ marginTop: '16px', marginBottom: '32px' }}
       >
         View Leaderboard
       </button>

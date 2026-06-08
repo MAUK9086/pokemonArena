@@ -38,6 +38,9 @@ export const useSessionStore = create((set, get) => ({
 
   status: 'idle',     // 'idle' | 'active' | 'complete'
 
+  // Set before resetSession() to start the next session with a specific question
+  overrideQuestion: null,
+
   actions: {
     initSession(question, pokemonPool) {
       const freshId = getOrCreateSessionId();
@@ -130,6 +133,14 @@ export const useSessionStore = create((set, get) => ({
           [pokemonId]: (eloImpacts[pokemonId] || 0) + delta,
         },
       });
+    },
+
+    setOverrideQuestion(question) {
+      set({ overrideQuestion: question });
+    },
+
+    clearOverrideQuestion() {
+      set({ overrideQuestion: null });
     },
 
     resetSession() {

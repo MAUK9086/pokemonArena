@@ -16,14 +16,11 @@ export function PokemonSprite({ pokemon, side, size = 180, forExport = false }) 
       className="pokemon-slot__sprite"
       src={src}
       alt={pokemon.name}
-      width={size}
-      height={size}
       style={{
         imageRendering: 'pixelated',
         transform: mirrored ? 'scaleX(-1)' : 'none',
         userSelect: 'none',
         pointerEvents: 'none',
-        objectFit: 'contain',
       }}
       onError={() => setUseFallback(true)}
       draggable={false}

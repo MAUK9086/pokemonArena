@@ -6,7 +6,7 @@ import { getDailyQuestion, FALLBACK_QUESTIONS } from '../config/questions.js';
 
 export function useSession() {
   const { pool, loading: poolLoading, progress } = usePokemonData();
-  const { status, actions } = useSessionStore();
+  const { status, overrideQuestion, actions } = useSessionStore();
   const initialized = useRef(false);
 
   useEffect(() => {
@@ -16,17 +16,18 @@ export function useSession() {
       initialized.current = true;
       let question = null;
 
-      try {
-        const dbQuestions = await fetchActiveQuestions();
-        if (dbQuestions.length) {
-          question = getDailyQuestion(dbQuestions);
+      // User picked a specific question from the results screen
+      if (overrideQuestion) {
+        question = overrideQuestion;
+        actions.clearOverrideQuestion();
+      } else {
+        try {
+          const dbQuestions = await fetchActiveQuestions();
+          if (dbQuestions.length) question = getDailyQuestion(dbQuestions);
+        } catch {
+          // Supabase unavailable — fall through to fallback
         }
-      } catch {
-        // Supabase unavailable — fall through to fallback
-      }
-
-      if (!question) {
-        question = getDailyQuestion(FALLBACK_QUESTIONS);
+        if (!question) question = getDailyQuestion(FALLBACK_QUESTIONS);
       }
 
       actions.initSession(question, pool);
