@@ -1,0 +1,263 @@
+/* Per-type particle animations applied via .particles-{type} className on arena background halves */
+
+/* Fire — rising embers */
+.particles-fire::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(255, 100, 0, 0.5) 2px, transparent 2px),
+    radial-gradient(circle, rgba(255, 180, 0, 0.3) 1px, transparent 1px);
+  background-size: 32px 32px, 20px 20px;
+  background-position: 0 0, 10px 10px;
+  animation: particleRise 3s linear infinite;
+  pointer-events: none;
+}
+
+/* Water — floating bubbles */
+.particles-water::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(72, 144, 240, 0.4) 2px, transparent 2px);
+  background-size: 28px 28px;
+  animation: particleFloat 4s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+/* Electric — flicker */
+.particles-electric::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(248, 208, 48, 0.5) 1px, transparent 1px);
+  background-size: 18px 18px;
+  animation: particleFlicker 0.8s steps(2, end) infinite;
+  pointer-events: none;
+}
+
+/* Grass — sway */
+.particles-grass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(120, 200, 80, 0.35) 2px, transparent 2px);
+  background-size: 24px 24px;
+  animation: particleSway 5s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+/* Psychic — rotate shapes */
+.particles-psychic::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(248, 88, 136, 0.4) 2px, transparent 2px),
+    radial-gradient(circle, rgba(148, 0, 211, 0.25) 3px, transparent 3px);
+  background-size: 30px 30px, 50px 50px;
+  animation: particleRotate 6s linear infinite;
+  pointer-events: none;
+}
+
+/* Ghost — wisps */
+.particles-ghost::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(112, 88, 152, 0.5) 3px, transparent 3px);
+  background-size: 40px 40px;
+  animation: particleWisp 6s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+/* Ice — drift */
+.particles-ice::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(152, 216, 216, 0.4) 2px, transparent 2px);
+  background-size: 22px 22px;
+  animation: particleDrift 5s linear infinite;
+  pointer-events: none;
+}
+
+/* Rock/Ground — dust */
+.particles-rock::before,
+.particles-ground::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(184, 160, 56, 0.35) 2px, transparent 2px);
+  background-size: 26px 26px;
+  animation: particleSettle 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Dragon — spiral */
+.particles-dragon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(112, 56, 248, 0.4) 2px, transparent 2px);
+  background-size: 35px 35px;
+  animation: particleRotate 4s linear infinite reverse;
+  pointer-events: none;
+}
+
+/* Poison — pulse */
+.particles-poison::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(160, 64, 160, 0.4) 2px, transparent 2px);
+  background-size: 24px 24px;
+  animation: particlePulse 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Fighting — burst */
+.particles-fighting::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(192, 48, 40, 0.4) 2px, transparent 2px);
+  background-size: 20px 20px;
+  animation: particleBurst 2s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+/* Flying — drift upward */
+.particles-flying::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(168, 144, 240, 0.3) 1px, transparent 1px);
+  background-size: 16px 16px;
+  animation: particleRise 5s linear infinite;
+  pointer-events: none;
+}
+
+/* Bug — shimmer */
+.particles-bug::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(168, 184, 32, 0.35) 2px, transparent 2px);
+  background-size: 22px 22px;
+  animation: particleFlicker 1.5s steps(2, end) infinite;
+  pointer-events: none;
+}
+
+/* Dark — slow drift */
+.particles-dark::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(112, 88, 72, 0.3) 3px, transparent 3px);
+  background-size: 44px 44px;
+  animation: particleWisp 8s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+/* Steel — shimmer */
+.particles-steel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(184, 184, 208, 0.25) 2px, transparent 2px);
+  background-size: 28px 28px;
+  animation: particlePulse 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Fairy — sparkle */
+.particles-fairy::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(238, 153, 172, 0.45) 2px, transparent 2px),
+    radial-gradient(circle, rgba(244, 189, 201, 0.3) 1px, transparent 1px);
+  background-size: 30px 30px, 18px 18px;
+  animation: particleFlicker 2s steps(2, end) infinite;
+  pointer-events: none;
+}
+
+/* Normal — subtle noise */
+.particles-normal::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(168, 168, 120, 0.2) 1px, transparent 1px);
+  background-size: 20px 20px;
+  animation: particleFloat 7s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+/* ===== KEYFRAMES ===== */
+@keyframes particleRise {
+  from { background-position: 0 0, 10px 10px; opacity: 0.7; }
+  to   { background-position: 0 -80px, 10px -70px; opacity: 0; }
+}
+
+@keyframes particleFloat {
+  from { background-position: 0 0; }
+  to   { background-position: 10px 20px; }
+}
+
+@keyframes particleFlicker {
+  0%   { opacity: 0.7; }
+  50%  { opacity: 0.2; }
+  100% { opacity: 0.7; }
+}
+
+@keyframes particleSway {
+  from { background-position: 0 0; }
+  to   { background-position: 15px 0; }
+}
+
+@keyframes particleRotate {
+  from { background-position: 0 0, 0 0; }
+  to   { background-position: 60px 60px, -60px -60px; }
+}
+
+@keyframes particleWisp {
+  from { background-position: 0 0; opacity: 0.6; }
+  to   { background-position: 20px -30px; opacity: 0.2; }
+}
+
+@keyframes particleDrift {
+  from { background-position: 0 0; }
+  to   { background-position: -30px -30px; }
+}
+
+@keyframes particleSettle {
+  0%   { background-position: 0 -10px; opacity: 0.5; }
+  50%  { background-position: 5px 0; opacity: 0.3; }
+  100% { background-position: 0 -10px; opacity: 0.5; }
+}
+
+@keyframes particlePulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%       { opacity: 0.2; transform: scale(1.05); }
+}
+
+@keyframes particleBurst {
+  from { background-size: 20px 20px; }
+  to   { background-size: 26px 26px; }
+}
