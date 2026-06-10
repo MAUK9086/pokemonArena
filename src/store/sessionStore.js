@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { getOrCreateSessionId } from '../utils/sessionId.js';
 
-const TOTAL_MATCHUPS = 20;
+const TOTAL_MATCHUPS = 10;
 
 function drawOne(pool) {
   if (!pool.length) return null;
@@ -31,6 +31,7 @@ export const useSessionStore = create((set, get) => ({
   // winStreak 1 = won once, 2 = won twice, 3 → retire before setting
   champion: null,
 
+  hotIds: [],         // pokemon IDs to prefer for early matchups
   matchups: [],       // [{ winnerId, loserId, matchIndex }]
   matchupCount: 0,
   picks: {},          // { [pokemonId]: count }
@@ -42,13 +43,14 @@ export const useSessionStore = create((set, get) => ({
   overrideQuestion: null,
 
   actions: {
-    initSession(question, pokemonPool) {
+    initSession(question, pokemonPool, hotIds = []) {
       const freshId = getOrCreateSessionId();
       set({
         sessionId: freshId,
         question,
         questionId: question.id,
         pool: [...pokemonPool],
+        hotIds: [...hotIds],
         usedIds: new Set(),
         champion: null,
         matchups: [],
@@ -63,7 +65,7 @@ export const useSessionStore = create((set, get) => ({
     },
 
     _advance() {
-      const { pool, usedIds, champion, matchupCount } = get();
+      const { pool, hotIds, usedIds, champion, matchupCount } = get();
       if (matchupCount >= TOTAL_MATCHUPS) {
         set({ status: 'complete' });
         return;
@@ -82,7 +84,22 @@ export const useSessionStore = create((set, get) => ({
           usedIds: new Set([...usedIds, right.id]),
         });
       } else {
-        const [left, right] = drawTwo(available);
+        // For first 2 matchups, prefer controversial pokemon if available
+        let left, right;
+        if (matchupCount < 2 && hotIds.length >= 2) {
+          const unusedHot = hotIds.filter((id) => !usedIds.has(id));
+          const hotPool = pool.filter((p) => unusedHot.includes(p.id));
+          if (hotPool.length >= 2) {
+            [left, right] = drawTwo(hotPool);
+          } else if (hotPool.length === 1) {
+            left = hotPool[0];
+            const rest = available.filter((p) => p.id !== left.id);
+            right = drawOne(rest);
+          }
+        }
+        if (!left || !right) {
+          [left, right] = drawTwo(available);
+        }
         if (!left || !right) { set({ status: 'complete' }); return; }
         set({
           left,
@@ -149,6 +166,7 @@ export const useSessionStore = create((set, get) => ({
         question: null,
         questionId: null,
         pool: [],
+        hotIds: [],
         usedIds: new Set(),
         left: null,
         right: null,

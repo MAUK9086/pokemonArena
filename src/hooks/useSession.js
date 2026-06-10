@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useSessionStore } from '../store/sessionStore.js';
 import { usePokemonData } from './usePokemonData.js';
-import { fetchActiveQuestions } from '../services/rankingService.js';
+import { fetchActiveQuestions, fetchMostControversial } from '../services/rankingService.js';
 import { getDailyQuestion, FALLBACK_QUESTIONS } from '../config/questions.js';
 
 export function useSession() {
@@ -30,7 +30,17 @@ export function useSession() {
         if (!question) question = getDailyQuestion(FALLBACK_QUESTIONS);
       }
 
-      actions.initSession(question, pool);
+      let hotIds = [];
+      if (question?.id) {
+        try {
+          const controversial = await fetchMostControversial(question.id, 4);
+          hotIds = controversial.map((p) => p.pokemon_id ?? p.id).filter(Boolean);
+        } catch {
+          // no prior ELO data — fall back to random order
+        }
+      }
+
+      actions.initSession(question, pool, hotIds);
     }
 
     start();

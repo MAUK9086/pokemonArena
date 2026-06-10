@@ -121,13 +121,23 @@ export function ResultCard() {
         </motion.div>
       </motion.div>
 
+      <motion.button
+        className="btn btn--secondary results-leaderboard-btn"
+        onClick={() => navigate('/leaderboard')}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35 }}
+      >
+        View Global Rankings
+      </motion.button>
+
       {/* Question picker — play a different question */}
       <motion.div
         className="question-picker"
         style={{ maxWidth: 'var(--arena-max-width)', width: '100%', marginTop: '24px' }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
+        transition={{ delay: 0.5 }}
       >
         <p className="question-picker__heading">play another question</p>
         {FALLBACK_QUESTIONS.map((q) => {
@@ -151,13 +161,7 @@ export function ResultCard() {
         })}
       </motion.div>
 
-      <button
-        className="btn btn--ghost"
-        onClick={() => navigate('/leaderboard')}
-        style={{ marginTop: '16px', marginBottom: '32px' }}
-      >
-        View Leaderboard
-      </button>
+      <div style={{ marginBottom: '32px' }} />
     </div>
   );
 }

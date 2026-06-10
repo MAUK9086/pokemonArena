@@ -11,6 +11,7 @@ import { StreakBadge } from './StreakBadge.jsx';
 import { MatchupCounter } from './MatchupCounter.jsx';
 import { SwipeHint } from './SwipeHint.jsx';
 import { LoadingScreen } from '../UI/LoadingScreen.jsx';
+import { InstructionsOverlay } from '../UI/InstructionsOverlay.jsx';
 import { trackEvent } from '../../analytics.js';
 
 export function Arena() {
@@ -69,7 +70,7 @@ export function Arena() {
         rightType={right.types[0]}
       />
       <div className="arena__ui">
-        <MatchupCounter current={matchupCount} total={20} />
+        <MatchupCounter current={matchupCount} total={10} />
 
         {question && (
           <p className="arena__question">{question.prompt}</p>
@@ -98,6 +99,7 @@ export function Arena() {
 
         {matchupCount === 0 && <SwipeHint />}
       </div>
+      <InstructionsOverlay />
     </div>
   );
 }
